@@ -96,24 +96,33 @@ async function carregarConsumosBackend() {
 }
 
 /*************************
- * CADASTRO DE USUÁRIO
+ * CADASTRO DE USUÁRIO (BACKEND REAL)
  *************************/
-formUsuario.addEventListener('submit', (e) => {
+formUsuario.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  estado.usuario = {
+  const usuarioDTO = {
     nome: document.getElementById('nome').value,
     email: document.getElementById('email').value,
     telefone: document.getElementById('telefone').value,
     endereco: document.getElementById('endereco').value,
     tarifa: parseFloat(document.getElementById('tarifa').value),
-    num_residentes: parseInt(document.getElementById('num_residentes').value),
-    data_cadastro: new Date().toISOString()
+    numResidentes: parseInt(document.getElementById('num_residentes').value)
   };
 
-  mostrarNotificacao('Usuário cadastrado com sucesso!');
-  document.querySelector('[data-tela="aparelhos"]').click();
+  try {
+    const usuarioSalvo = await salvarUsuarioBackend(usuarioDTO);
+
+    estado.usuario = usuarioSalvo; // AGORA TEM ID
+
+    mostrarNotificacao('Usuário salvo no sistema!');
+    document.querySelector('[data-tela="aparelhos"]').click();
+  } catch (error) {
+    console.error(error);
+    mostrarNotificacao('Erro ao salvar usuário', 'erro');
+  }
 });
+
 
 /*************************
  * CADASTRO DE APARELHOS
@@ -211,3 +220,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   carregarConsumosBackend();
 });
+
+/*************************
+ * BACKEND — USUÁRIO
+ *************************/
+async function salvarUsuarioBackend(usuario) {
+  const response = await fetch('/api/usuarios', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(usuario)
+  });
+
+  if (!response.ok) {
+    throw new Error('Erro ao salvar usuário no backend');
+  }
+
+  return response.json(); // retorna o usuário com id
+}

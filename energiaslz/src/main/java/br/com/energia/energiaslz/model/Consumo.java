@@ -4,12 +4,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-
 @Document(collection = "consumos")
 public class Consumo {
 
     @Id
     private String id;
+
+    private String usuarioId; // 🔗 vínculo com Usuário
 
     private String nomeAparelho;
     private Integer potencia;
@@ -21,10 +22,16 @@ public class Consumo {
         this.dataRegistro = LocalDateTime.now();
     }
 
-    // getters e setters
-
     public String getId() {
         return id;
+    }
+
+    public String getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(String usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
     public String getNomeAparelho() {
