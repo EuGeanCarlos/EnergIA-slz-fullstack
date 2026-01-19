@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EnergIA SLZ - Controle de Consumo Energético</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+     <header>
+            <div class="logo">
+                
+                <img src="img/logo-energIA.png" alt="Logo EnergIA SLZ" width="200px">
+                
+            </div><!---fim logo-->
+            <nav>
+                <button class="nav-btn active" data-tela="cadastro">Cadastro de Usuário</button>
+                <button class="nav-btn" data-tela="aparelhos">Cadastro de Aparelhos</button>
+                <button class="nav-btn" data-tela="relatorio">Relatório de Consumo</button>
+            </nav>
+    </header>
+
+
+    <div class="container">
+       
+        <!-- Tela de Cadastro de Usuário -->
+        <section id="cadastro" class="tela ativa">
+            <h2><i class="fas fa-user-plus"></i> Cadastro de Usuário</h2>
+            <form id="formUsuario">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nome">Nome Completo</label>
+                        <input type="text" id="nome" name="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="telefone">Telefone</label>
+                        <input type="tel" id="telefone" name="telefone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endereco">Endereço</label>
+                        <input type="text" id="endereco" name="endereco" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tarifa">Tarifa de Energia (R$/kWh)</label>
+                        <input type="number" id="tarifa" name="tarifa" step="0.01" min="0" value="0.75" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="num_residentes">Número de Residentes</label>
+                        <input type="number" id="num_residentes" name="num_residentes" min="1" value="1" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn">
+                    <i class="fas fa-save"></i> Salvar Cadastro
+                </button>
+            </form>
+        </section>
+
+        <!-- Tela de Cadastro de Aparelhos -->
+        <section id="aparelhos" class="tela">
+            <h2><i class="fas fa-plug"></i> Cadastro de Aparelhos</h2>
+            <p>Adicione os aparelhos elétricos que você utiliza e informe o tempo de uso diário.</p>
+            
+            <form id="formAparelho">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nome_aparelho">Nome do Aparelho</label>
+                        <input type="text" id="nome_aparelho" name="nome_aparelho" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="potencia">Potência (Watts)</label>
+                        <input type="number" id="potencia" name="potencia" min="1" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="horas_uso">Horas de uso por dia</label>
+                        <input type="number" id="horas_uso" name="horas_uso" step="0.1" min="0" max="24" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantidade">Quantidade</label>
+                        <input type="number" id="quantidade" name="quantidade" min="1" value="1" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-amarelo">
+                    <i class="fas fa-plus"></i> Adicionar Aparelho
+                </button>
+            </form>
+            
+            <div id="listaAparelhos" style="margin-top: 30px;">
+                <h3>Aparelhos Cadastrados</h3>
+                <div id="aparelhos-container">
+                    <!-- Aparelhos serão adicionados aqui via JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Tela de Relatório -->
+        <section id="relatorio" class="tela">
+            <h2><i class="fas fa-chart-bar"></i> Relatório de Consumo</h2>
+            <p>Análise completa do seu consumo energético e recomendações para economizar.</p>
+            
+            <div class="report-card">
+                <div class="report-header">
+                    <h3>Consumo Mensal</h3>
+                    <div class="report-value verde" id="consumo-mensal">0 kWh</div>
+                </div>
+                <p>Estimativa baseada nos aparelhos cadastrados e seu uso diário.</p>
+            </div>
+            
+            <div class="report-card">
+                <div class="report-header">
+                    <h3>Custo Mensal</h3>
+                    <div class="report-value azul" id="custo-mensal">R$ 0,00</div>
+                </div>
+                <p>Valor calculado com base na tarifa de energia informada.</p>
+            </div>
+            
+            <div class="report-card">
+                <div class="report-header">
+                    <h3>Emissão de CO₂</h3>
+                    <div class="report-value amarelo" id="emissao-co2">0 kg</div>
+                </div>
+                <p>Estimativa de emissões de carbono baseada no consumo energético.</p>
+            </div>
+            
+            <div class="recommendations">
+                <h3>Recomendações para Economia</h3>
+                <div id="recomendacoes-container">
+                    <!-- Recomendações serão adicionadas aqui via JavaScript -->
+                </div>
+            </div>
+            
+            <button id="btn-gerar-relatorio" class="btn btn-azul" style="margin-top: 20px;">
+                <i class="fas fa-sync-alt"></i> Atualizar Relatório
+            </button>
+        </section>
+        
+        <div class="footer">
+            <p>EnergIA SLZ - Sistema de controle de consumo energético</p>
+            <p>© 2026 - Projeto para otimização do uso de energia elétrica</p>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
