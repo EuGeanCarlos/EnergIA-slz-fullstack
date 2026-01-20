@@ -2,6 +2,7 @@ package br.com.energia.energiaslz.controller;
 
 import br.com.energia.energiaslz.model.Consumo;
 import br.com.energia.energiaslz.service.ConsumoService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,8 +19,8 @@ public class ConsumoController {
     }
 
     @PostMapping
-    public Consumo salvarConsumo(@RequestBody Consumo consumo) {
-        return consumoService.salvarConsumo(consumo);
+    public Consumo salvar(@Valid @RequestBody Consumo consumo) {
+        return consumoService.salvar(consumo);
     }
 
     @GetMapping

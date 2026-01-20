@@ -15,7 +15,7 @@ public class ConsumoService {
         this.consumoRepository = consumoRepository;
     }
 
-    public Consumo salvarConsumo(Consumo consumo) {
+    public Consumo salvar(Consumo consumo) {
         return consumoRepository.save(consumo);
     }
 

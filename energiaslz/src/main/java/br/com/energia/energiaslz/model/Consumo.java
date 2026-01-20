@@ -1,21 +1,38 @@
 package br.com.energia.energiaslz.model;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+
 @Document(collection = "consumos")
 public class Consumo {
 
     @Id
     private String id;
 
-    private String usuarioId; // 🔗 vínculo com Usuário
+    @NotBlank(message = "Usuário é obrigatório")
+    private String usuarioId;
 
+    @NotBlank(message = "Nome do aparelho é obrigatório")
     private String nomeAparelho;
+
+    @NotNull(message = "Potência é obrigatória")
+    @Positive(message = "Potência deve ser maior que zero")
     private Integer potencia;
+
+    @NotNull(message = "Horas de uso são obrigatórias")
+    @Positive(message = "Horas de uso devem ser maiores que zero")
     private Double horasUso;
+
+    @NotNull(message = "Quantidade é obrigatória")
+    @Positive(message = "Quantidade deve ser maior que zero")
     private Integer quantidade;
+
     private LocalDateTime dataRegistro;
 
     public Consumo() {
