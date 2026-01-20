@@ -18,13 +18,31 @@ public class ConsumoController {
         this.consumoService = consumoService;
     }
 
-    @PostMapping
-    public Consumo salvar(@Valid @RequestBody Consumo consumo) {
-        return consumoService.salvar(consumo);
+    /**
+     * Salva um consumo VINCULADO a um usuário
+     */
+    @PostMapping("/{usuarioId}")
+    public Consumo salvar(
+            @PathVariable String usuarioId,
+            @Valid @RequestBody Consumo consumo
+    ) {
+        consumo.setUsuarioId(usuarioId); // 🔗 vínculo garantido no backend
+        return consumoService.salvarConsumo(consumo);
     }
 
+    /**
+     * Lista todos os consumos
+     */
     @GetMapping
     public List<Consumo> listarConsumos() {
         return consumoService.listarConsumos();
+    }
+
+    /**
+     * Lista consumos por usuário (útil para debug)
+     */
+    @GetMapping("/usuario/{usuarioId}")
+    public List<Consumo> listarPorUsuario(@PathVariable String usuarioId) {
+        return consumoService.listarPorUsuario(usuarioId);
     }
 }

@@ -19,7 +19,7 @@ const btnGerarRelatorio = document.getElementById('btn-gerar-relatorio');
 const notification = document.getElementById('notification');
 
 /*************************
- * NAVEGAÇÃO ENTRE TELAS
+ * NAVEGAÇÃO
  *************************/
 botoesNavegacao.forEach(botao => {
   botao.addEventListener('click', () => {
@@ -30,27 +30,37 @@ botoesNavegacao.forEach(botao => {
 
     telas.forEach(tela => {
       tela.classList.remove('ativa');
-      if (tela.id === telaAlvo) {
-        tela.classList.add('ativa');
-      }
+      if (tela.id === telaAlvo) tela.classList.add('ativa');
     });
 
-    if (telaAlvo === 'aparelhos') {
+    if (telaAlvo === 'aparelhos' && estado.usuario) {
       carregarConsumosBackend();
     }
   });
 });
 
 /*************************
- * NOTIFICAÇÕES
+ * NOTIFICAÇÃO
  *************************/
 function mostrarNotificacao(mensagem, tipo = 'sucesso') {
   notification.textContent = mensagem;
   notification.className = `notification ${tipo} show`;
+  setTimeout(() => notification.classList.remove('show'), 3000);
+}
 
-  setTimeout(() => {
-    notification.classList.remove('show');
-  }, 3000);
+/*************************
+ * BACKEND — USUÁRIO
+ *************************/
+async function salvarUsuarioBackend(usuario) {
+  const response = await fetch('/api/usuarios', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(usuario)
+  });
+
+  if (!response.ok) throw new Error('Erro ao salvar usuário');
+
+  return response.json(); // RETORNA COM ID
 }
 
 /*************************
@@ -58,6 +68,7 @@ function mostrarNotificacao(mensagem, tipo = 'sucesso') {
  *************************/
 async function salvarConsumoBackend(aparelho) {
   const consumoDTO = {
+    usuarioId: estado.usuario.id, // 🔑 VÍNCULO CRÍTICO
     nomeAparelho: aparelho.nome,
     potencia: aparelho.potencia,
     horasUso: aparelho.horas_uso,
@@ -70,35 +81,30 @@ async function salvarConsumoBackend(aparelho) {
     body: JSON.stringify(consumoDTO)
   });
 
-  if (!response.ok) {
-    throw new Error('Erro ao salvar consumo');
-  }
+  if (!response.ok) throw new Error('Erro ao salvar consumo');
 }
 
 async function carregarConsumosBackend() {
-  try {
-    const response = await fetch('/api/consumos');
-    const dados = await response.json();
+  const response = await fetch('/api/consumos');
+  const dados = await response.json();
 
-    estado.aparelhos = dados.map(d => ({
-      id: d.id,
-      nome: d.nomeAparelho,
-      potencia: d.potencia,
-      horas_uso: d.horasUso,
-      quantidade: d.quantidade
+  estado.aparelhos = dados
+    .filter(c => c.usuarioId === estado.usuario.id)
+    .map(c => ({
+      id: c.id,
+      nome: c.nomeAparelho,
+      potencia: c.potencia,
+      horas_uso: c.horasUso,
+      quantidade: c.quantidade
     }));
 
-    renderizarAparelhos();
-  } catch (error) {
-    console.error(error);
-    mostrarNotificacao('Erro ao carregar aparelhos', 'erro');
-  }
+  renderizarAparelhos();
 }
 
 /*************************
- * CADASTRO DE USUÁRIO (BACKEND REAL)
+ * CADASTRO DE USUÁRIO
  *************************/
-formUsuario.addEventListener('submit', async (e) => {
+formUsuario.addEventListener('submit', async e => {
   e.preventDefault();
 
   const usuarioDTO = {
@@ -111,23 +117,18 @@ formUsuario.addEventListener('submit', async (e) => {
   };
 
   try {
-    const usuarioSalvo = await salvarUsuarioBackend(usuarioDTO);
-
-    estado.usuario = usuarioSalvo; // AGORA TEM ID
-
-    mostrarNotificacao('Usuário salvo no sistema!');
+    estado.usuario = await salvarUsuarioBackend(usuarioDTO);
+    mostrarNotificacao('Usuário cadastrado!');
     document.querySelector('[data-tela="aparelhos"]').click();
-  } catch (error) {
-    console.error(error);
-    mostrarNotificacao('Erro ao salvar usuário', 'erro');
+  } catch {
+    mostrarNotificacao('Erro ao cadastrar usuário', 'erro');
   }
 });
 
-
 /*************************
- * CADASTRO DE APARELHOS
+ * CADASTRO DE APARELHO
  *************************/
-formAparelho.addEventListener('submit', async (e) => {
+formAparelho.addEventListener('submit', async e => {
   e.preventDefault();
 
   const aparelho = {
@@ -140,11 +141,9 @@ formAparelho.addEventListener('submit', async (e) => {
   try {
     await salvarConsumoBackend(aparelho);
     await carregarConsumosBackend();
-
-    mostrarNotificacao('Aparelho salvo com sucesso!');
+    mostrarNotificacao('Aparelho salvo!');
     formAparelho.reset();
-  } catch (error) {
-    console.error(error);
+  } catch {
     mostrarNotificacao('Erro ao salvar aparelho', 'erro');
   }
 });
@@ -160,82 +159,49 @@ function renderizarAparelhos() {
     return;
   }
 
-  estado.aparelhos.forEach(aparelho => {
-    const consumoDiario =
-      (aparelho.potencia * aparelho.horas_uso * aparelho.quantidade) / 1000;
-
-    const div = document.createElement('div');
-    div.className = 'appliance-item';
-    div.innerHTML = `
-      <div class="appliance-header">
-        <div class="appliance-name">${aparelho.nome}</div>
+  estado.aparelhos.forEach(a => {
+    const consumoDiario = (a.potencia * a.horas_uso * a.quantidade) / 1000;
+    containerAparelhos.innerHTML += `
+      <div class="appliance-item">
+        <strong>${a.nome}</strong>
+        <p>${consumoDiario.toFixed(2)} kWh/dia</p>
       </div>
-      <p>Potência: ${aparelho.potencia} W</p>
-      <p>Uso diário: ${aparelho.horas_uso} h</p>
-      <p>Quantidade: ${aparelho.quantidade}</p>
-      <p><strong>Consumo diário:</strong> ${consumoDiario.toFixed(2)} kWh</p>
     `;
-
-    containerAparelhos.appendChild(div);
   });
 }
 
 /*************************
- * RELATÓRIO (LOCAL)
+ * RELATÓRIO — BACKEND REAL
  *************************/
-btnGerarRelatorio.addEventListener('click', () => {
-  if (!estado.usuario || estado.aparelhos.length === 0) {
-    mostrarNotificacao('Cadastre usuário e aparelhos primeiro!', 'erro');
-    return;
+btnGerarRelatorio.addEventListener('click', async () => {
+  try {
+    const response = await fetch(`/api/relatorios/${estado.usuario.id}`);
+    const relatorio = await response.json();
+
+    document.getElementById('consumo-mensal').innerText =
+      relatorio.consumoMensal.toFixed(2) + ' kWh';
+
+    document.getElementById('custo-mensal').innerText =
+      'R$ ' + relatorio.custoEstimado.toFixed(2);
+
+    document.getElementById('emissao-co2').innerText =
+      (relatorio.consumoMensal * 0.084).toFixed(2) + ' kg';
+
+    mostrarNotificacao('Relatório gerado!');
+  } catch {
+    mostrarNotificacao('Erro ao gerar relatório', 'erro');
   }
-
-  const consumoTotal = estado.aparelhos.reduce((total, a) => {
-    return total + (a.potencia * a.horas_uso * a.quantidade * 30) / 1000;
-  }, 0);
-
-  const custo = consumoTotal * estado.usuario.tarifa;
-
-  document.getElementById('consumo-mensal').innerText =
-    consumoTotal.toFixed(2) + ' kWh';
-  document.getElementById('custo-mensal').innerText =
-    'R$ ' + custo.toFixed(2);
-  document.getElementById('emissao-co2').innerText =
-    (consumoTotal * 0.084).toFixed(2) + ' kg';
-
-  mostrarNotificacao('Relatório gerado!');
 });
 
 /*************************
- * STATUS DA API + CARGA INICIAL
+ * STATUS DA API
  *************************/
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const response = await fetch('/api/status');
-    const data = await response.json();
-    const statusEl = document.getElementById('status');
-    if (statusEl) statusEl.innerText = data.mensagem;
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    document.getElementById('status').innerText = data.mensagem;
   } catch {
-    console.warn('API status indisponível');
+    console.warn('API offline');
   }
-
-  carregarConsumosBackend();
 });
-
-/*************************
- * BACKEND — USUÁRIO
- *************************/
-async function salvarUsuarioBackend(usuario) {
-  const response = await fetch('/api/usuarios', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(usuario)
-  });
-
-  if (!response.ok) {
-    throw new Error('Erro ao salvar usuário no backend');
-  }
-
-  return response.json(); // retorna o usuário com id
-}

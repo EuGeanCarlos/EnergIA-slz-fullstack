@@ -4,6 +4,7 @@ import br.com.energia.energiaslz.dto.RelatorioDTO;
 import br.com.energia.energiaslz.service.RelatorioService;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
 @RequestMapping("/api/relatorios")
 @CrossOrigin(origins = "*")
@@ -19,9 +20,9 @@ public class RelatorioController {
     public RelatorioDTO gerarRelatorio(@PathVariable String usuarioId) {
         return relatorioService.gerarRelatorioPorUsuario(usuarioId);
     }
-    @GetMapping
-    public String info() {
-        return "Informe o ID do usuário na URL.";
-    }
 
+    @GetMapping
+    public String status() {
+        return "Relatórios ativo";
+    }
 }

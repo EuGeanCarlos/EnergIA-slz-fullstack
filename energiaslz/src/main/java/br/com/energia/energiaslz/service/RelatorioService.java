@@ -27,8 +27,12 @@ public class RelatorioService {
 
         for (Consumo consumo : consumos) {
 
-            // Fórmula:
-            // (potência em W * horas/dia * quantidade * 30) / 1000 = kWh/mês
+            if (consumo.getPotencia() == null ||
+                    consumo.getHorasUso() == null ||
+                    consumo.getQuantidade() == null) {
+                continue; // ignora dados inválidos
+            }
+
             double consumoMensalAparelho =
                     (consumo.getPotencia() * consumo.getHorasUso() * consumo.getQuantidade() * 30) / 1000;
 
@@ -39,4 +43,5 @@ public class RelatorioService {
 
         return new RelatorioDTO(consumoMensalTotal, custoEstimado);
     }
+
 }

@@ -22,4 +22,9 @@ public class ConsumoService {
     public List<Consumo> listarConsumos() {
         return consumoRepository.findAll();
     }
+
+    public List<Consumo> listarPorUsuario(String usuarioId) {
+        return consumoRepository.findByUsuarioId(usuarioId);
+    }
+
 }

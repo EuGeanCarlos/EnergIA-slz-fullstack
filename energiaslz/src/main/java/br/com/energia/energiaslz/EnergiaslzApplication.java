@@ -7,7 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class EnergiaslzApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(EnergiaslzApplication.class, args);
+
+        SpringApplication.run(EnergiaslzApplication.class, args);
 	}
 
 }
