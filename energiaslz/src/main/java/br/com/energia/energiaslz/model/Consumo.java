@@ -21,6 +21,12 @@ public class Consumo {
     @NotBlank(message = "Nome do aparelho é obrigatório")
     private String nomeAparelho;
 
+    // ✅ NOVO: setor (muito útil pra IA)
+    private String setor;
+
+    // ✅ NOVO: observação (opcional)
+    private String observacao;
+
     @NotNull(message = "Potência é obrigatória")
     @Positive(message = "Potência deve ser maior que zero")
     private Integer potencia;
@@ -39,51 +45,28 @@ public class Consumo {
         this.dataRegistro = LocalDateTime.now();
     }
 
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
 
-    public String getUsuarioId() {
-        return usuarioId;
-    }
+    public String getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(String usuarioId) { this.usuarioId = usuarioId; }
 
-    public void setUsuarioId(String usuarioId) {
-        this.usuarioId = usuarioId;
-    }
+    public String getNomeAparelho() { return nomeAparelho; }
+    public void setNomeAparelho(String nomeAparelho) { this.nomeAparelho = nomeAparelho; }
 
-    public String getNomeAparelho() {
-        return nomeAparelho;
-    }
+    public String getSetor() { return setor; }
+    public void setSetor(String setor) { this.setor = setor; }
 
-    public void setNomeAparelho(String nomeAparelho) {
-        this.nomeAparelho = nomeAparelho;
-    }
+    public String getObservacao() { return observacao; }
+    public void setObservacao(String observacao) { this.observacao = observacao; }
 
-    public Integer getPotencia() {
-        return potencia;
-    }
+    public Integer getPotencia() { return potencia; }
+    public void setPotencia(Integer potencia) { this.potencia = potencia; }
 
-    public void setPotencia(Integer potencia) {
-        this.potencia = potencia;
-    }
+    public Double getHorasUso() { return horasUso; }
+    public void setHorasUso(Double horasUso) { this.horasUso = horasUso; }
 
-    public Double getHorasUso() {
-        return horasUso;
-    }
+    public Integer getQuantidade() { return quantidade; }
+    public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
 
-    public void setHorasUso(Double horasUso) {
-        this.horasUso = horasUso;
-    }
-
-    public Integer getQuantidade() {
-        return quantidade;
-    }
-
-    public void setQuantidade(Integer quantidade) {
-        this.quantidade = quantidade;
-    }
-
-    public LocalDateTime getDataRegistro() {
-        return dataRegistro;
-    }
+    public LocalDateTime getDataRegistro() { return dataRegistro; }
 }

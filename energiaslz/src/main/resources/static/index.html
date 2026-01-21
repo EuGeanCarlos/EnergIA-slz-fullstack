@@ -1,170 +1,272 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EnergIA SLZ - Controle de Consumo Energético</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EnergIA SLZ — Gestão de Energia para Microempresas</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-     <header>
-            <div class="logo">
-                
-                <img src="img/logo-energIA.png" alt="Logo EnergIA SLZ" width="200px">
-                
-            </div><!---fim logo-->
-            <nav>
-                <button class="nav-btn active" data-tela="cadastro">Cadastro de Usuário</button>
-                <button class="nav-btn" data-tela="aparelhos">Cadastro de Aparelhos</button>
-                <button class="nav-btn" data-tela="relatorio">Relatório de Consumo</button>
-            </nav>
-    </header>
-     <div style="padding: 10px 20px; font-family: Poppins, sans-serif;">
-         <strong>Status da API:</strong> <span id="status">verificando...</span>
-     </div>
+<header>
+    <div class="branding">
+        <div class="logo">
+            <img src="img/logo-energIA.png" alt="Logo EnergIA SLZ">
+        </div>
 
+        <div class="branding-text">
+            <div class="branding-title">EnergIA SLZ</div>
+            <div class="branding-subtitle">Gestão de energia para microempresas — custos, consumo e plano de ação</div>
+        </div>
 
-     <div class="container">
-       
-        <!-- Tela de Cadastro de Usuário -->
-        <section id="cadastro" class="tela ativa">
-            <h2><i class="fas fa-user-plus"></i> Cadastro de Usuário</h2>
-            <form id="formUsuario">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="nome">Nome Completo</label>
-                        <input type="text" id="nome" name="nome" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">E-mail</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="telefone">Telefone</label>
-                        <input type="tel" id="telefone" name="telefone" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="endereco">Endereço</label>
-                        <input type="text" id="endereco" name="endereco" required>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="tarifa">Tarifa de Energia (R$/kWh)</label>
-                        <input type="number" id="tarifa" name="tarifa" step="0.01" min="0" value="0.75" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="num_residentes">Número de Residentes</label>
-                        <input type="number" id="num_residentes" name="num_residentes" min="1" value="1" required>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn">
-                    <i class="fas fa-save"></i> Salvar Cadastro
-                </button>
-            </form>
-        </section>
-
-        <!-- Tela de Cadastro de Aparelhos -->
-        <section id="aparelhos" class="tela">
-            <h2><i class="fas fa-plug"></i> Cadastro de Aparelhos</h2>
-            <p>Adicione os aparelhos elétricos que você utiliza e informe o tempo de uso diário.</p>
-            
-            <form id="formAparelho">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="nome_aparelho">Nome do Aparelho</label>
-                        <input type="text" id="nome_aparelho" name="nome_aparelho" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="potencia">Potência (Watts)</label>
-                        <input type="number" id="potencia" name="potencia" min="1" required>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="horas_uso">Horas de uso por dia</label>
-                        <input type="number" id="horas_uso" name="horas_uso" step="0.1" min="0" max="24" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="quantidade">Quantidade</label>
-                        <input type="number" id="quantidade" name="quantidade" min="1" value="1" required>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn btn-amarelo">
-                    <i class="fas fa-plus"></i> Adicionar Aparelho
-                </button>
-            </form>
-            
-            <div id="listaAparelhos" style="margin-top: 30px;">
-                <h3>Aparelhos Cadastrados</h3>
-                <div id="aparelhos-container">
-                    <!-- Aparelhos serão adicionados aqui via JavaScript -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Tela de Relatório -->
-        <section id="relatorio" class="tela">
-            <h2><i class="fas fa-chart-bar"></i> Relatório de Consumo</h2>
-            <p>Análise completa do seu consumo energético e recomendações para economizar.</p>
-            
-            <div class="report-card">
-                <div class="report-header">
-                    <h3>Consumo Mensal</h3>
-                    <div class="report-value verde" id="consumo-mensal">0 kWh</div>
-                </div>
-                <p>Estimativa baseada nos aparelhos cadastrados e seu uso diário.</p>
-            </div>
-            
-            <div class="report-card">
-                <div class="report-header">
-                    <h3>Custo Mensal</h3>
-                    <div class="report-value azul" id="custo-mensal">R$ 0,00</div>
-                </div>
-                <p>Valor calculado com base na tarifa de energia informada.</p>
-            </div>
-            
-            <div class="report-card">
-                <div class="report-header">
-                    <h3>Emissão de CO₂</h3>
-                    <div class="report-value amarelo" id="emissao-co2">0 kg</div>
-                </div>
-                <p>Estimativa de emissões de carbono baseada no consumo energético.</p>
-            </div>
-            
-            <div class="recommendations">
-                <h3>Recomendações para Economia</h3>
-                <div id="recomendacoes-container">
-                    <!-- Recomendações serão adicionadas aqui via JavaScript -->
-                </div>
-            </div>
-            
-            <button id="btn-gerar-relatorio" class="btn btn-azul" style="margin-top: 20px;">
-                <i class="fas fa-sync-alt"></i> Atualizar Relatório
-            </button>
-        </section>
-        
-        <div class="footer">
-            <p>EnergIA SLZ - Sistema de controle de consumo energético</p>
-            <p>© 2026 - Projeto para otimização do uso de energia elétrica</p>
+        <div class="badge">
+            <i class="fa-solid fa-briefcase"></i> Microempresas
         </div>
     </div>
-    
-    <div id="notification" class="notification"></div>
 
-    <script src="script.js"></script>
+    <div class="status-bar">
+        <span><i class="fa-solid fa-chart-line"></i> Diagnóstico operacional e economia estimada.</span>
+
+        <!-- IMPORTANTE: só existe um #status -->
+        <span class="status-pill" id="status-pill">
+        <span class="status-dot"></span>
+        <span id="status">verificando…</span>
+      </span>
+    </div>
+
+    <nav>
+        <button class="nav-btn active" data-tela="cadastro" data-step="1">Empresa</button>
+        <button class="nav-btn" data-tela="aparelhos" data-step="2">Equipamentos</button>
+        <button class="nav-btn" data-tela="relatorio" data-step="3">Painel</button>
+    </nav>
+</header>
+
+<div class="container">
+
+    <!-- =========================
+         TELA 1 — CADASTRO DA EMPRESA
+    ========================== -->
+    <section id="cadastro" class="tela ativa">
+        <h2><i class="fas fa-building"></i> Cadastro da Empresa</h2>
+        <p class="helper">
+            Cadastre a microempresa e defina a tarifa para gerar um diagnóstico focado em reduzir custos operacionais.
+        </p>
+
+        <form id="formUsuario">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nome">Responsável (nome)</label>
+                    <input type="text" id="nome" name="nome" placeholder="Ex.: Maria Souza" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">E-mail corporativo</label>
+                    <input type="email" id="email" name="email" placeholder="Ex.: financeiro@empresa.com" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="telefone">Telefone / WhatsApp</label>
+                    <input type="tel" id="telefone" name="telefone" placeholder="Ex.: (98) 9xxxx-xxxx" required>
+                </div>
+                <div class="form-group">
+                    <label for="endereco">Endereço da empresa</label>
+                    <input type="text" id="endereco" name="endereco" placeholder="Ex.: Centro, São Luís - MA" required>
+                </div>
+            </div>
+
+            <!-- Campos “microempresa” (B2B) — por enquanto não vão pro backend,
+                 mas deixam o UX claro. Depois a gente integra na IA. -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="empresa_nome">Nome da empresa</label>
+                    <input type="text" id="empresa_nome" name="empresa_nome" placeholder="Ex.: Padaria Bom Pão">
+                </div>
+
+                <div class="form-group">
+                    <label for="segmento">Segmento</label>
+                    <select id="segmento" name="segmento">
+                        <option value="">Selecione…</option>
+                        <option>Restaurante/Lanchonete</option>
+                        <option>Mercado/Mercearia</option>
+                        <option>Salão/Barbearia</option>
+                        <option>Escritório/Serviços</option>
+                        <option>Oficina</option>
+                        <option>Farmácia</option>
+                        <option>Outros</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="horario_funcionamento">Horário de funcionamento</label>
+                    <input type="text" id="horario_funcionamento" name="horario_funcionamento" placeholder="Ex.: 08:00–18:00">
+                </div>
+
+                <div class="form-group">
+                    <label for="num_residentes">Número de colaboradores</label>
+                    <!-- mantemos o id num_residentes pra não quebrar o JS -->
+                    <input type="number" id="num_residentes" name="num_residentes" min="1" value="1" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="tarifa">Tarifa de Energia (R$/kWh)</label>
+                    <input type="number" id="tarifa" name="tarifa" step="0.01" min="0" value="0.75" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="faturamento_est">Faturamento mensal estimado (opcional)</label>
+                    <input type="number" id="faturamento_est" name="faturamento_est" step="0.01" min="0" placeholder="Ex.: 25000">
+                </div>
+            </div>
+
+            <button type="submit" class="btn">
+                <i class="fas fa-save"></i> Salvar Empresa
+            </button>
+        </form>
+    </section>
+
+    <!-- =========================
+         TELA 2 — EQUIPAMENTOS
+    ========================== -->
+    <section id="aparelhos" class="tela">
+        <h2><i class="fas fa-plug"></i> Equipamentos & Setores</h2>
+        <p class="helper">
+            Cadastre os equipamentos da empresa e o tempo médio de uso diário. Isso alimenta o diagnóstico e as recomendações.
+        </p>
+
+        <form id="formAparelho">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nome_aparelho">Equipamento</label>
+                    <input type="text" id="nome_aparelho" name="nome_aparelho" placeholder="Ex.: Freezer vertical" required>
+                </div>
+
+                <!-- Campo novo (não quebra JS) — útil pra IA depois -->
+                <div class="form-group">
+                    <label for="setor">Setor</label>
+                    <select id="setor" name="setor">
+                        <option value="">Selecione…</option>
+                        <option>Administrativo</option>
+                        <option>Recepção</option>
+                        <option>Vendas</option>
+                        <option>Cozinha/Produção</option>
+                        <option>Estoque</option>
+                        <option>Oficina</option>
+                        <option>Outros</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="potencia">Potência (Watts)</label>
+                    <input type="number" id="potencia" name="potencia" min="1" placeholder="Ex.: 200" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="horas_uso">Horas de uso por dia</label>
+                    <input type="number" id="horas_uso" name="horas_uso" step="0.1" min="0" max="24" placeholder="Ex.: 8" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="quantidade">Quantidade</label>
+                    <input type="number" id="quantidade" name="quantidade" min="1" value="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Observação (opcional)</label>
+                    <input type="text" id="obs_aparelho" name="obs_aparelho" placeholder="Ex.: fica ligado no horário de pico">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-amarelo">
+                <i class="fas fa-plus"></i> Adicionar Equipamento
+            </button>
+        </form>
+
+        <div id="listaAparelhos" style="margin-top: 22px;">
+            <h3>Equipamentos cadastrados</h3>
+            <div id="aparelhos-container">
+                <!-- render JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- =========================
+         TELA 3 — PAINEL EXECUTIVO
+    ========================== -->
+    <section id="relatorio" class="tela">
+        <h2><i class="fas fa-chart-column"></i> Painel Executivo & Diagnóstico</h2>
+        <p class="helper">
+            Visão executiva do consumo e custo mensal estimado. Em seguida, um plano de ação para economia e redução de CO₂.
+        </p>
+
+        <!-- KPI Grid (B2B) -->
+        <div class="kpi-grid">
+            <div class="kpi">
+                <div class="kpi-title">Consumo mensal</div>
+                <div class="kpi-value verde" id="consumo-mensal">0 kWh</div>
+                <div class="kpi-hint">Baseado nos equipamentos cadastrados.</div>
+            </div>
+
+            <div class="kpi">
+                <div class="kpi-title">Custo mensal estimado</div>
+                <div class="kpi-value azul" id="custo-mensal">R$ 0,00</div>
+                <div class="kpi-hint">Tarifa informada no cadastro da empresa.</div>
+            </div>
+
+            <div class="kpi">
+                <div class="kpi-title">Emissão mensal de CO₂</div>
+                <div class="kpi-value amarelo" id="emissao-co2">0 kg</div>
+                <div class="kpi-hint">Estimativa ambiental para relatório.</div>
+            </div>
+        </div>
+
+        <!-- Mantemos suas report-cards (compatibilidade/estética extra) -->
+        <div class="report-card">
+            <div class="report-header">
+                <h3>Resumo do diagnóstico</h3>
+                <div class="report-value verde">OK</div>
+            </div>
+            <p>
+                Clique em <strong>Gerar diagnóstico</strong> para atualizar os números e ver recomendações.
+            </p>
+        </div>
+
+        <div class="recommendations">
+            <h3>Plano de ação recomendado</h3>
+            <div id="recomendacoes-container">
+                <!-- depois a IA preenche. por enquanto podemos preencher fixo via JS -->
+            </div>
+        </div>
+
+        <button id="btn-gerar-relatorio" class="btn btn-azul" style="margin-top: 12px;">
+            <i class="fas fa-wand-magic-sparkles"></i> Gerar diagnóstico
+        </button>
+    </section>
+
+    <div class="footer">
+        <p><strong>EnergIA SLZ</strong> — Gestão de energia para microempresas</p>
+        <p>© 2026 — Projeto para otimização do uso de energia elétrica</p>
+    </div>
+
+</div>
+
+<div id="notification" class="notification"></div>
+
+<script src="script.js"></script>
 </body>
 </html>

@@ -22,4 +22,10 @@ public class UsuarioService {
     public List<Usuario> listar() {
         return usuarioRepository.findAll();
     }
+
+    // ✅ NOVO
+    public Usuario buscarPorId(String id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário/Empresa não encontrado: " + id));
+    }
 }

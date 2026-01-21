@@ -339,3 +339,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // se já tem usuário salvo, você pode carregar aparelhos automaticamente:
   // await carregarConsumosBackend();
 });
+
+const pill = document.getElementById('status-pill');
+if (pill) {
+  pill.classList.remove('ok', 'offline');
+  pill.classList.add(statusEl.innerText === 'offline' ? 'offline' : 'ok');
+}

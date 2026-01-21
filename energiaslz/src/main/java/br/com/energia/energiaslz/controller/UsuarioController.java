@@ -8,6 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/usuarios")
+@CrossOrigin(origins = "*")
 public class UsuarioController {
 
     private final UsuarioService service;
@@ -24,5 +25,11 @@ public class UsuarioController {
     @GetMapping
     public List<Usuario> listar() {
         return service.listar();
+    }
+
+    // ✅ NOVO: buscar por ID (IA vai usar)
+    @GetMapping("/{id}")
+    public Usuario buscarPorId(@PathVariable String id) {
+        return service.buscarPorId(id);
     }
 }
