@@ -19,14 +19,29 @@ public class ConsumoController {
     }
 
     /**
-     * Salva um consumo VINCULADO a um usuário
+     * ✅ ROTA COMPATÍVEL COM O FRONT ATUAL
+     * Front envia JSON com usuarioId no body:
+     * { usuarioId: "...", nomeAparelho: "...", potencia: ..., horasUso: ..., quantidade: ... }
+     */
+    @PostMapping
+    public Consumo salvar(@Valid @RequestBody Consumo consumo) {
+        // garante que usuário existe no payload
+        if (consumo.getUsuarioId() == null || consumo.getUsuarioId().isBlank()) {
+            throw new IllegalArgumentException("usuarioId é obrigatório no corpo da requisição.");
+        }
+        return consumoService.salvarConsumo(consumo);
+    }
+
+    /**
+     * ✅ Mantém sua rota antiga também (útil para debug / postman)
+     * POST /api/consumos/{usuarioId}
      */
     @PostMapping("/{usuarioId}")
-    public Consumo salvar(
+    public Consumo salvarPorPath(
             @PathVariable String usuarioId,
             @Valid @RequestBody Consumo consumo
     ) {
-        consumo.setUsuarioId(usuarioId); // 🔗 vínculo garantido no backend
+        consumo.setUsuarioId(usuarioId);
         return consumoService.salvarConsumo(consumo);
     }
 
