@@ -28,4 +28,6 @@ public class UsuarioService {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário/Empresa não encontrado: " + id));
     }
+
+
 }
