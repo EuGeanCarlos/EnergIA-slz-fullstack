@@ -20,21 +20,21 @@ public class ChatService {
     private final UsuarioService usuarioService;
     private final ConsumoService consumoService;
     private final RelatorioService relatorioService;
-    private final OllamaClient ollamaClient; // ✅ agora resolve no mesmo package
+    private final GeminiClient geminiClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${ai.provider:ollama}")
+    @Value("${ai.provider:gemini}")
     private String aiProvider;
 
     public ChatService(UsuarioService usuarioService,
                        ConsumoService consumoService,
                        RelatorioService relatorioService,
-                       OllamaClient ollamaClient,
+                       GeminiClient geminiClient,
                        ObjectMapper objectMapper) {
         this.usuarioService = usuarioService;
         this.consumoService = consumoService;
         this.relatorioService = relatorioService;
-        this.ollamaClient = ollamaClient;
+        this.geminiClient = geminiClient;
         this.objectMapper = objectMapper;
     }
 
@@ -56,20 +56,16 @@ public class ChatService {
         double custo = safe(relatorio.getCustoEstimado());
         double co2KgMes = consumoKwh * 0.084;
 
-        // fallback se IA estiver desligada
-        if (!"ollama".equalsIgnoreCase(aiProvider)) {
+        // fallback se IA estiver desligada / provider diferente
+        if (!"gemini".equalsIgnoreCase(aiProvider)) {
             return respostaDeterministica(consumoKwh, custo, co2KgMes);
         }
 
         String system = systemPrompt();
         String user = userPrompt(empresa, consumos, consumoKwh, custo, co2KgMes, mensagem);
 
-        List<Map<String, String>> messages = List.of(
-                msg("system", system),
-                msg("user", user)
-        );
-
-        String conteudo = ollamaClient.chat(messages);
+        //  Chamada Gemini (ajuste o nome do método se o seu GeminiClient for diferente)
+        String conteudo = geminiClient.generateJson(system, user);
 
         // tenta parsear JSON
         try {
@@ -131,13 +127,6 @@ public class ChatService {
         return r;
     }
 
-    private Map<String, String> msg(String role, String content) {
-        Map<String, String> m = new LinkedHashMap<>();
-        m.put("role", role);
-        m.put("content", content);
-        return m;
-    }
-
     private String systemPrompt() {
         return """
                 Você é um consultor de eficiência energética especializado em microempresas.
@@ -145,7 +134,8 @@ public class ChatService {
                 - NÃO invente números. Use apenas os dados fornecidos (kWh, R$, CO2).
                 - Responda SOMENTE em JSON válido (sem markdown e sem texto fora do JSON).
                 - Gere recomendações práticas e priorizadas (5 itens).
-                                
+                - Se não for possível estimar impacto, use 0.
+
                 Retorne exatamente este formato:
                 {
                   "resposta": "texto curto e direto",
@@ -198,8 +188,7 @@ public class ChatService {
             }
         }
 
-        sb.append("\nPEDIDO:\n").append(mensagem).append("\n");
-
+        sb.append("\nPEDIDO DO USUÁRIO:\n").append(mensagem).append("\n");
         sb.append("\nTAREFA:\n");
         sb.append("Gere diagnóstico curto + 5 recomendações priorizadas.\n");
         sb.append("Se estimar impacto, seja conservador e derive de custo/consumo fornecidos. Se não der, use 0.\n");
