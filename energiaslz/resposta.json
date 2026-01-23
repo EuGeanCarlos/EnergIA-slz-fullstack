@@ -1,0 +1,16 @@
+﻿{
+    "resposta":  "{\n  \"resposta\": \"DiagnÃ³stico inicial indica que a geladeira e a TV sÃ£o os principais consumidores de energia. Otimizar o uso desses",
+    "recomendacoes":  [
+
+                      ],
+    "impacto":  {
+                    "economiaPercentual":  0,
+                    "economiaMensalReais":  0.0,
+                    "economiaAnualReais":  0.0,
+                    "co2EvitadoKgMes":  0.0
+                },
+    "relatorio":  {
+                      "consumoMensalKwh":  360.0,
+                      "custoEstimado":  270.0
+                  }
+}

@@ -12,7 +12,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class ChatService {
@@ -56,7 +58,7 @@ public class ChatService {
         double custo = safe(relatorio.getCustoEstimado());
         double co2KgMes = consumoKwh * 0.084;
 
-        // fallback se IA estiver desligada / provider diferente
+        // fallback se IA estiver desligada
         if (!"gemini".equalsIgnoreCase(aiProvider)) {
             return respostaDeterministica(consumoKwh, custo, co2KgMes);
         }
@@ -64,21 +66,16 @@ public class ChatService {
         String system = systemPrompt();
         String user = userPrompt(empresa, consumos, consumoKwh, custo, co2KgMes, mensagem);
 
-        //  Chamada Gemini (ajuste o nome do método se o seu GeminiClient for diferente)
         String conteudo = geminiClient.generateJson(system, user);
 
-        // tenta parsear JSON
+        // tenta parsear JSON retornado
         try {
             ChatResponseDTO parsed = objectMapper.readValue(conteudo, ChatResponseDTO.class);
 
             // força dados determinísticos do backend
             parsed.setRelatorio(new ChatResponseDTO.RelatorioResumoDTO(consumoKwh, custo));
 
-            // se impacto vier nulo, cria vazio
-            if (parsed.getImpacto() == null) {
-                parsed.setImpacto(impactoZero());
-            }
-
+            if (parsed.getImpacto() == null) parsed.setImpacto(impactoZero());
             if (parsed.getRecomendacoes() == null) parsed.setRecomendacoes(new ArrayList<>());
 
             return parsed;
@@ -130,8 +127,8 @@ public class ChatService {
     private String systemPrompt() {
         return """
                 Você é um consultor de eficiência energética especializado em microempresas.
-                Regras:
-                - NÃO invente números. Use apenas os dados fornecidos (kWh, R$, CO2).
+                Regras obrigatórias:
+                - NÃO invente números. Use apenas os números fornecidos (kWh, R$, CO2).
                 - Responda SOMENTE em JSON válido (sem markdown e sem texto fora do JSON).
                 - Gere recomendações práticas e priorizadas (5 itens).
                 - Se não for possível estimar impacto, use 0.
@@ -188,8 +185,9 @@ public class ChatService {
             }
         }
 
-        sb.append("\nPEDIDO DO USUÁRIO:\n").append(mensagem).append("\n");
-        sb.append("\nTAREFA:\n");
+        sb.append("\nPEDIDO DO USUÁRIO:\n").append(mensagem).append("\n\n");
+
+        sb.append("TAREFA:\n");
         sb.append("Gere diagnóstico curto + 5 recomendações priorizadas.\n");
         sb.append("Se estimar impacto, seja conservador e derive de custo/consumo fornecidos. Se não der, use 0.\n");
         sb.append("No campo relatorio, repita consumoMensalKwh e custoEstimado exatamente.\n");
