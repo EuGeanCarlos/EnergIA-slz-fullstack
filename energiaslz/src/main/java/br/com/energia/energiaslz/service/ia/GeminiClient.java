@@ -24,7 +24,7 @@ public class GeminiClient {
     @Value("${ai.gemini.api-version:v1beta}")
     private String apiVersion;
 
-    @Value("${ai.gemini.model:gemini-1.5-flash}")
+    @Value("${ai.gemini.model:gemini-2.5-flash-lite}")
     private String model;
 
     @Value("${ai.gemini.api-key:}")
@@ -59,7 +59,6 @@ public class GeminiClient {
                 )
         ));
 
-        // Ajuda MUITO a forçar saída em JSON puro (quando suportado pelo modelo/endpoint)
         body.put("generationConfig", Map.of(
                 "temperature", 0.2,
                 "maxOutputTokens", 1024,
@@ -104,7 +103,10 @@ public class GeminiClient {
                 "INSTRUÇÕES DO SISTEMA:\n" + safe(system) + "\n\n" +
                         "CONTEXTO DO USUÁRIO:\n" + safe(user) + "\n\n" +
                         "REGRA ABSOLUTA:\n" +
-                        "- Responda SOMENTE com um JSON válido.\n" +
+                        "- Sua resposta final deve ser UM ÚNICO OBJETO JSON.\n" +
+                        "- Não coloque JSON dentro de string.\n" +
+                        "- O campo \"resposta\" deve ser texto normal, não JSON.\n" +
+                        "- O campo \"recomendacoes\" deve ser uma LISTA com 5 itens.\n" +
                         "- Não use markdown.\n" +
                         "- Não escreva texto antes ou depois do JSON.\n";
 
@@ -139,7 +141,6 @@ public class GeminiClient {
             return s.substring(firstBrace, lastBrace + 1).trim();
         }
 
-        // Se não achou chaves, devolve como veio (ChatService decide fallback)
         return s;
     }
 }
