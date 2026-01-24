@@ -1,7 +1,31 @@
 ﻿{
-    "resposta":  "{\n  \"resposta\": \"DiagnÃ³stico inicial indica que a geladeira e a TV sÃ£o os principais consumidores de energia. Otimizar o uso desses",
+    "resposta":  "Não foi possível interpretar a resposta da IA. Exibindo recomendações padrão.\n\nResposta bruta:\n{\n  \"resposta\": \"Diagnóstico energético inicial para sua microempresa indica que a geladeira e a TV são os principais consumidores. Há um bom potencial de economia com otimização do uso e manutenção.\",\n  \"recomendacoes\": [\n    {\n      \"titulo\": \"Otimização da Geladeira\",",
     "recomendacoes":  [
-
+                          {
+                              "titulo":  "Revisar horários de uso",
+                              "descricao":  "Garanta que equipamentos não fiquem ligados fora do expediente e evite uso desnecessário em horários de pico.",
+                              "impacto":  "Redução de desperdício e controle de rotina"
+                          },
+                          {
+                              "titulo":  "Eliminar stand-by",
+                              "descricao":  "Desligue da tomada ou use régua com botão para TV, roteador, carregadores e aparelhos ociosos.",
+                              "impacto":  "Economia constante (consumo invisível)"
+                          },
+                          {
+                              "titulo":  "Manutenção preventiva",
+                              "descricao":  "Limpe filtros e ventilação, verifique vedação de geladeira/freezer e evite sobrecarga de tomadas.",
+                              "impacto":  "Melhora eficiência e reduz perdas"
+                          },
+                          {
+                              "titulo":  "Iluminação eficiente",
+                              "descricao":  "Troque lâmpadas por LED e aproveite luz natural; setorização ajuda a não iluminar áreas vazias.",
+                              "impacto":  "Economia no uso contínuo"
+                          },
+                          {
+                              "titulo":  "Checklist diário",
+                              "descricao":  "Crie uma rotina de fechamento: desligar equipamentos, luzes e estabilizadores ao final do expediente.",
+                              "impacto":  "Padronização e redução de desperdício"
+                          }
                       ],
     "impacto":  {
                     "economiaPercentual":  0,

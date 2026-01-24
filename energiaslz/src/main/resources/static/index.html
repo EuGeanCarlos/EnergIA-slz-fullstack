@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -36,9 +37,9 @@
 
         <!-- IMPORTANTE: só existe um #status -->
         <span class="status-pill" id="status-pill">
-        <span class="status-dot"></span>
-        <span id="status">verificando…</span>
-      </span>
+      <span class="status-dot"></span>
+      <span id="status">verificando…</span>
+    </span>
     </div>
 
     <nav>
@@ -235,21 +236,40 @@
             </div>
         </div>
 
-        <!-- Mantemos suas report-cards (compatibilidade/estética extra) -->
         <div class="report-card">
             <div class="report-header">
                 <h3>Resumo do diagnóstico</h3>
-                <div class="report-value verde">OK</div>
+                <div class="report-value verde" id="diagnostico-status">OK</div>
             </div>
-            <p>
+            <p id="diagnostico-helper">
                 Clique em <strong>Gerar diagnóstico</strong> para atualizar os números e ver recomendações.
             </p>
         </div>
 
-        <div class="recommendations">
-            <h3>Plano de ação recomendado</h3>
-            <div id="recomendacoes-container">
-                <!-- depois a IA preenche. por enquanto podemos preencher fixo via JS -->
+        <!-- ===== CHAT (novo) ===== -->
+        <div class="chat-card" aria-label="Chat de diagnóstico">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <i class="fa-solid fa-comments"></i>
+                    Assistente EnergIA
+                </div>
+                <div class="chat-subtitle">Diagnóstico e plano de ação em formato de conversa</div>
+            </div>
+
+            <div id="chat-messages" class="chat-messages" aria-live="polite">
+                <!-- mensagens render JS -->
+                <div class="chat-empty">
+                    <div class="chat-empty-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <div class="chat-empty-title">Sem mensagens ainda</div>
+                    <div class="chat-empty-text">Gere um diagnóstico para iniciar a conversa.</div>
+                </div>
+            </div>
+
+            <div class="chat-input">
+                <input id="chat-text" type="text" placeholder="Ex.: foque em economia no horário de pico…" />
+                <button id="chat-send" class="btn btn-azul" type="button">
+                    <i class="fa-solid fa-paper-plane"></i> Enviar
+                </button>
             </div>
         </div>
 
