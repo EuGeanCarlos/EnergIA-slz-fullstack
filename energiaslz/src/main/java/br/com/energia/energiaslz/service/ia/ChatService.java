@@ -66,26 +66,24 @@ public class ChatService {
         String system = systemPrompt();
         String user = userPrompt(empresa, consumos, consumoKwh, custo, co2KgMes, mensagem);
 
+        // Texto “supostamente JSON” vindo da IA (GeminiClient já tenta sanitizar)
         String conteudo = geminiClient.generateJson(system, user);
 
-        // 1) tenta parse direto para DTO
-        ChatResponseDTO resp = tryParseDto(conteudo);
+        ChatResponseDTO resp = null;
 
-        // 1.1) se veio JSON inteiro dentro do campo "resposta", desembrulha
-        resp = unwrapIfResponseContainsJson(resp);
+        // 1) tenta parse direto
+        resp = tryParseDto(conteudo);
 
-        // 2) se falhar, tenta extrair com JsonNode (mais tolerante)
+        // 2) se falhar, tenta leniente (lendo como JsonNode)
         if (resp == null) {
             resp = tryParseLenient(conteudo);
-            resp = unwrapIfResponseContainsJson(resp);
         }
 
-        // 3) se ainda falhar, fallback total determinístico
+        // 3) se ainda falhar, fallback determinístico (SEM poluir o campo resposta com bruto)
         if (resp == null) {
+            System.err.println("[IA] Falha ao interpretar JSON do Gemini. Conteúdo bruto:\n" + conteudo);
             resp = respostaDeterministica(consumoKwh, custo, co2KgMes);
-            resp.setResposta(
-                    "Não foi possível interpretar a resposta da IA. Exibindo recomendações padrão.\n\nResposta bruta:\n" + conteudo
-            );
+            resp.setResposta("Diagnóstico gerado com base nos seus dados. (IA retornou formato inválido, usei recomendações padrão.)");
         }
 
         // Força números determinísticos do backend (regra do projeto)
@@ -112,24 +110,6 @@ public class ChatService {
         return resp;
     }
 
-    private ChatResponseDTO unwrapIfResponseContainsJson(ChatResponseDTO resp) {
-        if (resp == null) return null;
-        if (resp.getResposta() == null) return resp;
-
-        String r = resp.getResposta().trim();
-
-        // Caso clássico: o modelo colocou o JSON inteiro como string dentro de "resposta"
-        if (r.startsWith("{") && r.endsWith("}")) {
-            try {
-                ChatResponseDTO unwrapped = objectMapper.readValue(r, ChatResponseDTO.class);
-                return unwrapped != null ? unwrapped : resp;
-            } catch (Exception ignored) {
-                return resp;
-            }
-        }
-        return resp;
-    }
-
     private ChatResponseDTO tryParseDto(String json) {
         try {
             return objectMapper.readValue(json, ChatResponseDTO.class);
@@ -146,14 +126,13 @@ public class ChatService {
     private ChatResponseDTO tryParseLenient(String json) {
         try {
             JsonNode root = objectMapper.readTree(json);
-            if (root == null || root.isMissingNode() || root.isNull()) return null;
+            if (root == null || root.isMissingNode() || root.isNull() || !root.isObject()) return null;
 
             ChatResponseDTO resp = new ChatResponseDTO();
 
-            // resposta (string)
             resp.setResposta(asTextOrNull(root.get("resposta")));
 
-            // impacto (objeto)
+            // impacto
             JsonNode impacto = root.get("impacto");
             if (impacto != null && impacto.isObject()) {
                 ChatResponseDTO.ImpactoDTO imp = new ChatResponseDTO.ImpactoDTO();
@@ -164,7 +143,7 @@ public class ChatService {
                 resp.setImpacto(imp);
             }
 
-            // recomendacoes: pode vir como array OU objeto (erro comum)
+            // recomendacoes
             List<ChatResponseDTO.RecomendacaoDTO> recs = new ArrayList<>();
             JsonNode recomendacoes = root.get("recomendacoes");
             if (recomendacoes != null) {
@@ -212,7 +191,7 @@ public class ChatService {
             }
         }
 
-        // completa até 5 com determinísticas (pra nunca ficar feio no front)
+        // completa até 5 com base
         List<ChatResponseDTO.RecomendacaoDTO> base = recomendacoesBase();
         int i = 0;
         while (out.size() < 5 && i < base.size()) {
@@ -220,9 +199,7 @@ public class ChatService {
             i++;
         }
 
-        // corta se vier mais de 5
         if (out.size() > 5) return out.subList(0, 5);
-
         return out;
     }
 
@@ -274,32 +251,31 @@ public class ChatService {
 
     private String systemPrompt() {
         return """
-            Você é consultor de eficiência energética para microempresas.
-
-            REGRAS:
-            - Responda SOMENTE com UM JSON válido (sem markdown, sem texto fora do JSON).
-            - NÃO coloque JSON dentro de string.
-            - NÃO invente números: use apenas os números fornecidos.
-            - Gere EXATAMENTE 5 recomendações.
-
-            FORMATO obrigatório:
-            {
-              "resposta": "texto curto e direto",
-              "recomendacoes": [
-                { "titulo": "...", "descricao": "...", "impacto": "..." }
-              ],
-              "impacto": {
-                "economiaPercentual": 0,
-                "economiaMensalReais": 0.0,
-                "economiaAnualReais": 0.0,
-                "co2EvitadoKgMes": 0.0
-              },
-              "relatorio": {
-                "consumoMensalKwh": 0.0,
-                "custoEstimado": 0.0
-              }
-            }
-            """;
+                Você é um consultor de eficiência energética especializado em microempresas.
+                Regras obrigatórias:
+                - NÃO invente números. Use apenas os números fornecidos (kWh, R$, CO2).
+                - Responda SOMENTE em JSON válido (sem markdown e sem texto fora do JSON).
+                - Gere recomendações práticas e priorizadas (5 itens).
+                - Se não for possível estimar impacto, use 0.
+                                
+                Retorne exatamente este formato:
+                {
+                  "resposta": "texto curto e direto",
+                  "recomendacoes": [
+                    { "titulo": "...", "descricao": "...", "impacto": "..." }
+                  ],
+                  "impacto": {
+                    "economiaPercentual": 0,
+                    "economiaMensalReais": 0.0,
+                    "economiaAnualReais": 0.0,
+                    "co2EvitadoKgMes": 0.0
+                  },
+                  "relatorio": {
+                    "consumoMensalKwh": 0.0,
+                    "custoEstimado": 0.0
+                  }
+                }
+                """;
     }
 
     private String userPrompt(Usuario empresa, List<Consumo> consumos,
@@ -338,9 +314,8 @@ public class ChatService {
 
         sb.append("TAREFA:\n");
         sb.append("Gere diagnóstico curto + 5 recomendações priorizadas.\n");
-        sb.append("No campo 'recomendacoes', gere EXATAMENTE 5 itens.\n");
+        sb.append("Se estimar impacto, seja conservador e derive de custo/consumo fornecidos. Se não der, use 0.\n");
         sb.append("No campo relatorio, repita consumoMensalKwh e custoEstimado exatamente.\n");
-        sb.append("Não coloque JSON dentro de string.\n");
 
         return sb.toString();
     }

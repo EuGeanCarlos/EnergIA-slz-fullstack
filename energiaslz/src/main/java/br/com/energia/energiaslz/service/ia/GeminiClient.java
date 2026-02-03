@@ -24,8 +24,7 @@ public class GeminiClient {
     @Value("${ai.gemini.api-version:v1beta}")
     private String apiVersion;
 
-    // deixe no properties: ai.gemini.model=gemini-2.5-flash-lite (ou gemini-2.5-flash)
-    @Value("${ai.gemini.model:gemini-2.5-flash-lite}")
+    @Value("${ai.gemini.model:gemini-1.5-flash}")
     private String model;
 
     @Value("${ai.gemini.api-key:}")
@@ -43,10 +42,9 @@ public class GeminiClient {
     }
 
     /**
-     * Chama o Gemini. Retorna o texto do candidates[0].content.parts[0].text (ou raw).
-     * Usa systemInstruction (melhor do que colar system+user tudo junto).
+     * Gera texto bruto do Gemini (normalmente candidates[0].content.parts[0].text).
      */
-    public String generateJson(String system, String user) {
+    public String generateText(String prompt) {
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException("GEMINI_API_KEY não configurada. Defina a variável de ambiente GEMINI_API_KEY.");
         }
@@ -54,24 +52,17 @@ public class GeminiClient {
         String url = baseUrl + "/" + apiVersion + "/models/" + model + ":generateContent";
 
         Map<String, Object> body = new LinkedHashMap<>();
-
-        // ✅ systemInstruction reduz o tamanho do prompt e melhora a obediência
-        body.put("systemInstruction", Map.of(
-                "parts", List.of(Map.of("text", safe(system)))
-        ));
-
-        // ✅ user vai separado (mais limpo)
         body.put("contents", List.of(
                 Map.of(
                         "role", "user",
-                        "parts", List.of(Map.of("text", safe(user)))
+                        "parts", List.of(Map.of("text", prompt))
                 )
         ));
 
-        // ✅ aumenta tokens pra não truncar JSON
+        // Força saída JSON quando suportado (ajuda mas não garante 100%)
         body.put("generationConfig", Map.of(
                 "temperature", 0.2,
-                "maxOutputTokens", 2048,
+                "maxOutputTokens", 1024,
                 "responseMimeType", "application/json"
         ));
 
@@ -86,15 +77,9 @@ public class GeminiClient {
 
         String raw = rawBytes == null ? "" : new String(rawBytes, StandardCharsets.UTF_8);
 
-        String text = extractCandidateText(raw);
-        return sanitizeToPureJson(text.isBlank() ? raw : text);
-    }
-
-    private String extractCandidateText(String raw) {
         try {
             JsonNode root = objectMapper.readTree(raw);
             JsonNode candidates = root.path("candidates");
-
             if (candidates.isArray() && candidates.size() > 0) {
                 JsonNode parts = candidates.get(0).path("content").path("parts");
                 if (parts.isArray() && parts.size() > 0) {
@@ -104,10 +89,26 @@ public class GeminiClient {
                     }
                 }
             }
-            return "";
+            return raw;
         } catch (Exception e) {
-            return "";
+            return raw;
         }
+    }
+
+    /**
+     * Envia system+user num único prompt e retorna SOMENTE JSON (sanitizado).
+     */
+    public String generateJson(String system, String user) {
+        String prompt =
+                "INSTRUÇÕES DO SISTEMA:\n" + safe(system) + "\n\n" +
+                        "CONTEXTO DO USUÁRIO:\n" + safe(user) + "\n\n" +
+                        "REGRA ABSOLUTA:\n" +
+                        "- Responda SOMENTE com um JSON válido.\n" +
+                        "- Não use markdown.\n" +
+                        "- Não escreva texto antes ou depois do JSON.\n";
+
+        String raw = generateText(prompt);
+        return sanitizeToPureJson(raw);
     }
 
     private String safe(String s) {
@@ -115,11 +116,12 @@ public class GeminiClient {
     }
 
     /**
-     * Remove markdown e tenta extrair o JSON.
-     * Se vier texto extra, pega do primeiro { até o último }.
+     * Remove markdown e tenta extrair apenas o PRIMEIRO objeto JSON completo { ... }.
+     * Faz balanceamento de chaves para não depender de lastIndexOf('}').
      */
     private String sanitizeToPureJson(String raw) {
         if (raw == null) return "";
+
         String s = raw.trim();
 
         // Remove cercas ```json ... ```
@@ -130,13 +132,42 @@ public class GeminiClient {
             if (lastFence > -1) s = s.substring(0, lastFence).trim();
         }
 
-        int firstBrace = s.indexOf('{');
-        int lastBrace = s.lastIndexOf('}');
+        // Tenta extrair o primeiro JSON bem-formado por balanceamento de chaves
+        int start = s.indexOf('{');
+        if (start < 0) return s;
 
-        if (firstBrace >= 0 && lastBrace > firstBrace) {
-            return s.substring(firstBrace, lastBrace + 1).trim();
+        int depth = 0;
+        boolean inString = false;
+        boolean escape = false;
+
+        for (int i = start; i < s.length(); i++) {
+            char c = s.charAt(i);
+
+            if (inString) {
+                if (escape) {
+                    escape = false;
+                } else if (c == '\\') {
+                    escape = true;
+                } else if (c == '"') {
+                    inString = false;
+                }
+                continue;
+            } else {
+                if (c == '"') {
+                    inString = true;
+                    continue;
+                }
+                if (c == '{') depth++;
+                if (c == '}') depth--;
+
+                if (depth == 0) {
+                    // fecha o primeiro objeto
+                    return s.substring(start, i + 1).trim();
+                }
+            }
         }
 
-        return s;
+        // Se não fechou, devolve como veio (ChatService decide fallback)
+        return s.substring(start).trim();
     }
 }
