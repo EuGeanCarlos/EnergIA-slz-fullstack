@@ -74,12 +74,15 @@ public class ChatService {
         // 1) tenta parse direto
         resp = tryParseDto(conteudo);
 
-        // 2) se falhar, tenta leniente (lendo como JsonNode)
+        // 2) se falhar, tenta leniente
         if (resp == null) {
             resp = tryParseLenient(conteudo);
         }
 
-        // 3) se ainda falhar, fallback determinístico (SEM poluir o campo resposta com bruto)
+        // 2.5) se veio JSON dentro do campo "resposta", desempacota
+        resp = unwrapIfJsonInsideResposta(resp);
+
+        // 3) se ainda falhar, fallback determinístico
         if (resp == null) {
             System.err.println("[IA] Falha ao interpretar JSON do Gemini. Conteúdo bruto:\n" + conteudo);
             resp = respostaDeterministica(consumoKwh, custo, co2KgMes);
@@ -175,6 +178,52 @@ public class ChatService {
         }
     }
 
+    /**
+     * Caso real do seu bug:
+     * - a IA às vezes devolve um JSON onde o campo "resposta" é, na verdade, OUTRO JSON em formato de string.
+     * Ex:
+     * { "resposta": "{ \"resposta\": \"...\", \"recomendacoes\": [...] }", "recomendacoes": [] }
+     *
+     * Aqui a gente tenta desempacotar esse JSON interno e mesclar no objeto final.
+     */
+    private ChatResponseDTO unwrapIfJsonInsideResposta(ChatResponseDTO resp) {
+        if (resp == null) return null;
+
+        String r = resp.getResposta();
+        if (r == null) return resp;
+
+        String s = r.trim();
+
+        // tenta extrair só o bloco JSON mesmo se vier texto antes/depois
+        int firstBrace = s.indexOf('{');
+        int lastBrace = s.lastIndexOf('}');
+        if (firstBrace < 0 || lastBrace <= firstBrace) return resp;
+
+        String maybeJson = s.substring(firstBrace, lastBrace + 1).trim();
+
+        try {
+            ChatResponseDTO inner = objectMapper.readValue(maybeJson, ChatResponseDTO.class);
+            if (inner == null) return resp;
+
+            // mescla: inner ganha se trouxer dados melhores
+            if (isNotBlank(inner.getResposta())) resp.setResposta(inner.getResposta());
+
+            if (inner.getRecomendacoes() != null && !inner.getRecomendacoes().isEmpty()) {
+                resp.setRecomendacoes(inner.getRecomendacoes());
+            }
+
+            if (inner.getImpacto() != null) resp.setImpacto(inner.getImpacto());
+
+            // relatorio a gente sobrescreve depois com determinístico, mas manter não faz mal
+            if (inner.getRelatorio() != null) resp.setRelatorio(inner.getRelatorio());
+
+        } catch (Exception ignored) {
+            // não era um JSON válido, ignora
+        }
+
+        return resp;
+    }
+
     private List<ChatResponseDTO.RecomendacaoDTO> normalizeAndEnsureFive(List<ChatResponseDTO.RecomendacaoDTO> recs) {
         List<ChatResponseDTO.RecomendacaoDTO> out = new ArrayList<>();
 
@@ -257,7 +306,7 @@ public class ChatService {
                 - Responda SOMENTE em JSON válido (sem markdown e sem texto fora do JSON).
                 - Gere recomendações práticas e priorizadas (5 itens).
                 - Se não for possível estimar impacto, use 0.
-                                
+
                 Retorne exatamente este formato:
                 {
                   "resposta": "texto curto e direto",

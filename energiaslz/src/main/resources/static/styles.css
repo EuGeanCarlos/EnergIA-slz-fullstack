@@ -299,9 +299,10 @@ input:focus, select:focus {
   box-shadow: 0 10px 20px var(--shadow);
   filter: brightness(0.98);
 }
-
+/*
 .btn-amarelo { background: var(--amarelo); color: #111827; }
 .btn-azul { background: var(--azul); color: #fff; }
+*/
 
 /* =========================
    LISTA DE EQUIPAMENTOS
