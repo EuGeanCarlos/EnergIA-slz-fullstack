@@ -41,9 +41,7 @@ public class GeminiClient {
                 .build();
     }
 
-    /**
-     * Gera texto bruto do Gemini (normalmente candidates[0].content.parts[0].text).
-     */
+    /** Gera texto bruto do Gemini (normalmente candidates[0].content.parts[0].text). */
     public String generateText(String prompt) {
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException("GEMINI_API_KEY não configurada. Defina a variável de ambiente GEMINI_API_KEY.");
@@ -59,10 +57,10 @@ public class GeminiClient {
                 )
         ));
 
-        // Força saída JSON quando suportado (ajuda mas não garante 100%)
+        // Força JSON quando suportado (ajuda, mas não garante 100%)
         body.put("generationConfig", Map.of(
                 "temperature", 0.2,
-                "maxOutputTokens", 1024,
+                "maxOutputTokens", 2048, // ⭐ aumentei (truncamento era provável)
                 "responseMimeType", "application/json"
         ));
 
@@ -95,9 +93,7 @@ public class GeminiClient {
         }
     }
 
-    /**
-     * Envia system+user num único prompt e retorna SOMENTE JSON (sanitizado).
-     */
+    /** Envia system+user num único prompt e retorna SOMENTE JSON (sanitizado). */
     public String generateJson(String system, String user) {
         String prompt =
                 "INSTRUÇÕES DO SISTEMA:\n" + safe(system) + "\n\n" +
@@ -116,8 +112,10 @@ public class GeminiClient {
     }
 
     /**
-     * Remove markdown e tenta extrair apenas o PRIMEIRO objeto JSON completo { ... }.
-     * Faz balanceamento de chaves para não depender de lastIndexOf('}').
+     * Remove markdown e tenta extrair o PRIMEIRO objeto JSON completo { ... }.
+     * - Remove ``` fences
+     * - Extrai por balanceamento de chaves
+     * - Se vier JSON como string "\"{...}\"", tenta desembrulhar
      */
     private String sanitizeToPureJson(String raw) {
         if (raw == null) return "";
@@ -132,9 +130,28 @@ public class GeminiClient {
             if (lastFence > -1) s = s.substring(0, lastFence).trim();
         }
 
-        // Tenta extrair o primeiro JSON bem-formado por balanceamento de chaves
+        // Caso: veio como string com aspas (ex: "{ \"resposta\": ... }" dentro de texto)
+        // Tenta extrair objeto primeiro
+        String extracted = extractFirstJsonObject(s);
+        if (extracted != null) {
+            return extracted;
+        }
+
+        // Se não achou { }, mas veio com aspas escapadas e parece JSON dentro de string
+        // Ex: "\"{\\n  \\\"resposta\\\": ... }\""
+        String unquoted = tryUnquoteJsonString(s);
+        if (unquoted != null) {
+            String extracted2 = extractFirstJsonObject(unquoted);
+            if (extracted2 != null) return extracted2;
+            return unquoted.trim();
+        }
+
+        return s;
+    }
+
+    private String extractFirstJsonObject(String s) {
         int start = s.indexOf('{');
-        if (start < 0) return s;
+        if (start < 0) return null;
 
         int depth = 0;
         boolean inString = false;
@@ -161,13 +178,25 @@ public class GeminiClient {
                 if (c == '}') depth--;
 
                 if (depth == 0) {
-                    // fecha o primeiro objeto
                     return s.substring(start, i + 1).trim();
                 }
             }
         }
 
-        // Se não fechou, devolve como veio (ChatService decide fallback)
+        // não fechou, provavelmente truncado
         return s.substring(start).trim();
+    }
+
+    private String tryUnquoteJsonString(String s) {
+        // Se for um JSON string literal completo, o Jackson consegue ler e devolver o conteúdo
+        // Ex: "\"{...}\"" => "{...}"
+        try {
+            if (s.length() >= 2 && s.startsWith("\"") && s.endsWith("\"")) {
+                return objectMapper.readValue(s, String.class);
+            }
+            return null;
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }

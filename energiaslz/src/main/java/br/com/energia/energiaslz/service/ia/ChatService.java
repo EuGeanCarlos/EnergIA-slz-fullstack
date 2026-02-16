@@ -41,12 +41,12 @@ public class ChatService {
     }
 
     public ChatResponseDTO responder(ChatRequestDTO req) {
-        if (req == null || req.getUsuarioId() == null || req.getUsuarioId().isBlank()) {
+        if (req == null || isBlank(req.getUsuarioId())) {
             throw new IllegalArgumentException("usuarioId é obrigatório.");
         }
 
         String usuarioId = req.getUsuarioId().trim();
-        String mensagem = (req.getMensagem() == null || req.getMensagem().isBlank())
+        String mensagem = isBlank(req.getMensagem())
                 ? "Gere um diagnóstico e 5 recomendações priorizadas para reduzir custo de energia."
                 : req.getMensagem().trim();
 
@@ -58,7 +58,7 @@ public class ChatService {
         double custo = safe(relatorio.getCustoEstimado());
         double co2KgMes = consumoKwh * 0.084;
 
-        // IA desligada? devolve determinístico
+        // IA desligada => determinístico
         if (!"gemini".equalsIgnoreCase(aiProvider)) {
             return respostaDeterministica(consumoKwh, custo, co2KgMes);
         }
@@ -66,30 +66,30 @@ public class ChatService {
         String system = systemPrompt();
         String user = userPrompt(empresa, consumos, consumoKwh, custo, co2KgMes, mensagem);
 
-        // Texto “supostamente JSON” vindo da IA (GeminiClient já tenta sanitizar)
         String conteudo = geminiClient.generateJson(system, user);
 
-        ChatResponseDTO resp = null;
+        // ⭐ LOG: isso é o que você precisa ver no terminal
+        System.out.println("=== GEMINI (sanitized) ===");
+        System.out.println(conteudo);
+        System.out.println("=== /GEMINI ===");
 
-        // 1) tenta parse direto
-        resp = tryParseDto(conteudo);
+        ChatResponseDTO resp = tryParseDto(conteudo);
 
-        // 2) se falhar, tenta leniente
         if (resp == null) {
             resp = tryParseLenient(conteudo);
         }
 
-        // 2.5) se veio JSON dentro do campo "resposta", desempacota
+        // Se veio JSON dentro do campo "resposta", desembrulha
         resp = unwrapIfJsonInsideResposta(resp);
 
-        // 3) se ainda falhar, fallback determinístico
-        if (resp == null) {
-            System.err.println("[IA] Falha ao interpretar JSON do Gemini. Conteúdo bruto:\n" + conteudo);
+        // Se ainda tá vazio demais => fallback
+        if (resp == null || isEmptyResponse(resp)) {
+            System.err.println("[IA] Falha ao interpretar JSON do Gemini. Conteúdo recebido:\n" + conteudo);
             resp = respostaDeterministica(consumoKwh, custo, co2KgMes);
             resp.setResposta("Diagnóstico gerado com base nos seus dados. (IA retornou formato inválido, usei recomendações padrão.)");
         }
 
-        // Força números determinísticos do backend (regra do projeto)
+        // Força números determinísticos do backend
         resp.setRelatorio(new ChatResponseDTO.RelatorioResumoDTO(consumoKwh, custo));
 
         // Normaliza impacto
@@ -102,15 +102,21 @@ public class ChatService {
             if (resp.getImpacto().getCo2EvitadoKgMes() == null) resp.getImpacto().setCo2EvitadoKgMes(0.0);
         }
 
-        // Normaliza recomendações e garante 5 itens
+        // Garante 5 recomendações
         resp.setRecomendacoes(normalizeAndEnsureFive(resp.getRecomendacoes()));
 
         // Resposta nunca vazia
-        if (resp.getResposta() == null || resp.getResposta().isBlank()) {
+        if (isBlank(resp.getResposta())) {
             resp.setResposta("Diagnóstico gerado com base nos seus dados de consumo e equipamentos.");
         }
 
         return resp;
+    }
+
+    private boolean isEmptyResponse(ChatResponseDTO resp) {
+        boolean semTexto = isBlank(resp.getResposta());
+        boolean semRecs = (resp.getRecomendacoes() == null || resp.getRecomendacoes().isEmpty());
+        return semTexto && semRecs;
     }
 
     private ChatResponseDTO tryParseDto(String json) {
@@ -121,21 +127,15 @@ public class ChatService {
         }
     }
 
-    /**
-     * Parse tolerante:
-     * - Lê como JsonNode
-     * - Extrai campos mesmo que o formato venha levemente diferente
-     */
+    /** Parse tolerante com JsonNode. */
     private ChatResponseDTO tryParseLenient(String json) {
         try {
             JsonNode root = objectMapper.readTree(json);
             if (root == null || root.isMissingNode() || root.isNull() || !root.isObject()) return null;
 
             ChatResponseDTO resp = new ChatResponseDTO();
-
             resp.setResposta(asTextOrNull(root.get("resposta")));
 
-            // impacto
             JsonNode impacto = root.get("impacto");
             if (impacto != null && impacto.isObject()) {
                 ChatResponseDTO.ImpactoDTO imp = new ChatResponseDTO.ImpactoDTO();
@@ -146,7 +146,6 @@ public class ChatService {
                 resp.setImpacto(imp);
             }
 
-            // recomendacoes
             List<ChatResponseDTO.RecomendacaoDTO> recs = new ArrayList<>();
             JsonNode recomendacoes = root.get("recomendacoes");
             if (recomendacoes != null) {
@@ -178,14 +177,7 @@ public class ChatService {
         }
     }
 
-    /**
-     * Caso real do seu bug:
-     * - a IA às vezes devolve um JSON onde o campo "resposta" é, na verdade, OUTRO JSON em formato de string.
-     * Ex:
-     * { "resposta": "{ \"resposta\": \"...\", \"recomendacoes\": [...] }", "recomendacoes": [] }
-     *
-     * Aqui a gente tenta desempacotar esse JSON interno e mesclar no objeto final.
-     */
+    /** Resolve o caso: "resposta" veio como "{...json...}" (string). */
     private ChatResponseDTO unwrapIfJsonInsideResposta(ChatResponseDTO resp) {
         if (resp == null) return null;
 
@@ -193,34 +185,16 @@ public class ChatService {
         if (r == null) return resp;
 
         String s = r.trim();
-
-        // tenta extrair só o bloco JSON mesmo se vier texto antes/depois
-        int firstBrace = s.indexOf('{');
-        int lastBrace = s.lastIndexOf('}');
-        if (firstBrace < 0 || lastBrace <= firstBrace) return resp;
-
-        String maybeJson = s.substring(firstBrace, lastBrace + 1).trim();
+        if (!s.startsWith("{") || !s.endsWith("}")) return resp;
 
         try {
-            ChatResponseDTO inner = objectMapper.readValue(maybeJson, ChatResponseDTO.class);
-            if (inner == null) return resp;
-
-            // mescla: inner ganha se trouxer dados melhores
-            if (isNotBlank(inner.getResposta())) resp.setResposta(inner.getResposta());
-
-            if (inner.getRecomendacoes() != null && !inner.getRecomendacoes().isEmpty()) {
-                resp.setRecomendacoes(inner.getRecomendacoes());
+            ChatResponseDTO inner = objectMapper.readValue(s, ChatResponseDTO.class);
+            if (inner != null) {
+                if (isNotBlank(inner.getResposta())) resp.setResposta(inner.getResposta());
+                if (inner.getRecomendacoes() != null && !inner.getRecomendacoes().isEmpty()) resp.setRecomendacoes(inner.getRecomendacoes());
+                if (inner.getImpacto() != null) resp.setImpacto(inner.getImpacto());
             }
-
-            if (inner.getImpacto() != null) resp.setImpacto(inner.getImpacto());
-
-            // relatorio a gente sobrescreve depois com determinístico, mas manter não faz mal
-            if (inner.getRelatorio() != null) resp.setRelatorio(inner.getRelatorio());
-
-        } catch (Exception ignored) {
-            // não era um JSON válido, ignora
-        }
-
+        } catch (Exception ignored) { }
         return resp;
     }
 
@@ -240,7 +214,6 @@ public class ChatService {
             }
         }
 
-        // completa até 5 com base
         List<ChatResponseDTO.RecomendacaoDTO> base = recomendacoesBase();
         int i = 0;
         while (out.size() < 5 && i < base.size()) {
@@ -370,7 +343,7 @@ public class ChatService {
     }
 
     private String nvl(String s) {
-        return (s == null || s.isBlank()) ? "-" : s;
+        return isBlank(s) ? "-" : s;
     }
 
     private double safe(Double v) {
@@ -380,16 +353,15 @@ public class ChatService {
     private String asTextOrNull(JsonNode n) {
         if (n == null || n.isNull() || n.isMissingNode()) return null;
         String s = n.asText(null);
-        return (s == null) ? null : s.trim();
+        return s == null ? null : s.trim();
     }
 
     private Integer asIntOrNull(JsonNode n) {
         if (n == null || n.isNull() || n.isMissingNode()) return null;
-        if (n.isInt() || n.isLong()) return n.asInt();
+        if (n.isInt() || n.isLong() || n.isNumber()) return n.asInt();
         if (n.isTextual()) {
             try { return Integer.parseInt(n.asText().trim()); } catch (Exception ignored) {}
         }
-        if (n.isNumber()) return n.asInt();
         return null;
     }
 
@@ -407,5 +379,9 @@ public class ChatService {
 
     private boolean isNotBlank(String s) {
         return s != null && !s.isBlank();
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 }
