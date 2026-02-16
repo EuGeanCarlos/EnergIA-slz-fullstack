@@ -68,6 +68,11 @@ public class ChatService {
 
         String conteudo = geminiClient.generateJson(system, user);
 
+        System.out.println("=== GEMINI (sanitized) ===");
+        System.out.println(conteudo);
+        System.out.println("=== /GEMINI ===");
+
+
         // ⭐ LOG: isso é o que você precisa ver no terminal
         System.out.println("=== GEMINI (sanitized) ===");
         System.out.println(conteudo);
