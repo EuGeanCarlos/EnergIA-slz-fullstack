@@ -25,9 +25,7 @@ A arquitetura separa a **lógica de negócio (Java)** da **geração de insights
 
 1. **Input:** Usuário cadastra empresa e equipamentos.
 2. **Processamento:** O Backend calcula as métricas base:
-
-
-
+    $consumoMensalKwh = \frac{potencia \times horasUso \times quantidade \times 30}{1000}$$custoEstimado = consumoMensalKwh \times tarifa$
 3. **Inteligência:** O Backend envia os dados estruturados para o **Gemini**, que retorna um JSON com o plano de ação.
 4. **Output:** Frontend renderiza os KPIs e o diagnóstico.
 
@@ -104,7 +102,7 @@ br.com.energia.energiaslz
 
 1. **Clonar o repositório:**
 ```bash
-git clone https://github.com/seu-usuario/energia-slz.git
+git clone [https://github.com/EuGeanCarlos/EnergIA-slz-fullstack.git]
 
 ```
 
