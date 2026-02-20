@@ -1,5 +1,12 @@
 # ⚡ EnergIA SLZ — Inteligência Energética para Microempresas
 
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=F7DF1E)
+![Google Gemini](https://img.shields.io/badge/Google%20Gemini-8E75C2?style=for-the-badge&logo=googlegemini&logoColor=white)
+![Maven](https://img.shields.io/badge/apache_maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
+
 > **Status do Projeto:** 🚀 Em desenvolvimento / Funcional
 
 O **EnergIA SLZ** é uma solução Full Stack que une o rigor do cálculo matemático à flexibilidade da IA Generativa. O sistema ajuda microempresas a transformarem contas de luz complexas em diagnósticos claros e planos de ação priorizados.
@@ -25,7 +32,7 @@ A arquitetura separa a **lógica de negócio (Java)** da **geração de insights
 
 1. **Input:** Usuário cadastra empresa e equipamentos.
 2. **Processamento:** O Backend calcula as métricas base:
-    $consumoMensalKwh = \frac{potencia \times horasUso \times quantidade \times 30}{1000}$$custoEstimado = consumoMensalKwh \times tarifa$
+    $consumoMensalKwh = \frac{potencia \times horasUso \times quantidade \times 30}{1000}$ $custoEstimado = consumoMensalKwh \times tarifa$
 3. **Inteligência:** O Backend envia os dados estruturados para o **Gemini**, que retorna um JSON com o plano de ação.
 4. **Output:** Frontend renderiza os KPIs e o diagnóstico.
 
