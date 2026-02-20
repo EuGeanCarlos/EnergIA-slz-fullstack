@@ -127,7 +127,7 @@ Acesse: `http://localhost:8080`
 
 ## 👨‍💻 Autor
 
-**Gean Carlos** - [LinkedIn](https://www.google.com/search?q=seu-link) | 
+**Gean Carlos** - [LinkedIn](https://www.linkedin.com/in/gean-carlos-a9903a220/)  
 *Desenvolvedor Full Stack em formação com foco em APIs e IA.*
 
 ---
