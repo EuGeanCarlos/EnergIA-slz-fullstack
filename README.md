@@ -1,287 +1,134 @@
-⚡ EnergIA SLZ — Inteligência Energética para Microempresas
+# ⚡ EnergIA SLZ — Inteligência Energética para Microempresas
 
-EnergIA SLZ é uma aplicação web full stack desenvolvida em Java + Spring Boot + MongoDB + JavaScript, com integração a IA generativa (Google Gemini) para geração de diagnósticos energéticos automatizados.
+> **Status do Projeto:** 🚀 Em desenvolvimento / Funcional
 
-O sistema permite que microempresas entendam seu consumo elétrico, estimem custos reais com base na tarifa cadastrada e recebam recomendações priorizadas para redução de despesas operacionais.
+O **EnergIA SLZ** é uma solução Full Stack que une o rigor do cálculo matemático à flexibilidade da IA Generativa. O sistema ajuda microempresas a transformarem contas de luz complexas em diagnósticos claros e planos de ação priorizados.
 
-Projeto arquitetado com foco em backend estruturado, API REST bem definida e separação clara entre cálculo determinístico e inteligência artificial.
+---
 
-🎯 Problema
+## 🎯 O Desafio vs. 💡 A Solução
 
-Microempresas frequentemente enfrentam:
+| Problema (Dor do Cliente) | Solução EnergIA SLZ |
+| --- | --- |
+| Contas elevadas e imprevisíveis | Cálculo determinístico de consumo real |
+| Falta de indicadores (kWh, CO₂) | Painel executivo com KPIs automáticos |
+| Dificuldade em priorizar ações | Diagnóstico via **Google Gemini API** |
+| Decisões baseadas em intuição | Recomendações baseadas em dados estruturados |
 
-Conta de energia elevada e imprevisível
+---
 
-Falta de controle sobre equipamentos e tempo de uso
+## 🧠 Arquitetura e Fluxo de Dados
 
-Ausência de indicadores claros (kWh, custo, CO₂)
+A arquitetura separa a **lógica de negócio (Java)** da **geração de insights (IA)**, garantindo que os valores financeiros sejam sempre precisos.
 
-Dificuldade em priorizar ações de economia
+### Fluxo da Aplicação
 
-Decisões baseadas em intuição, não em dados
+1. **Input:** Usuário cadastra empresa e equipamentos.
+2. **Processamento:** O Backend calcula as métricas base:
 
-💡 Solução
 
-O EnergIA SLZ combina:
 
-Cálculo determinístico confiável
+3. **Inteligência:** O Backend envia os dados estruturados para o **Gemini**, que retorna um JSON com o plano de ação.
+4. **Output:** Frontend renderiza os KPIs e o diagnóstico.
 
-Análise contextual via IA
+---
 
-Painel executivo orientado a decisão
+## 🛠️ Stack Tecnológica
 
-A aplicação realiza:
+### **Backend & Base**
 
-Cadastro da empresa (tarifa personalizada)
+* **Linguagem:** Java 17
+* **Framework:** Spring Boot 3.x (Web, Data MongoDB, Validation)
+* **Banco de Dados:** MongoDB (NoSQL)
+* **Gerenciador de Dependências:** Maven
 
-Cadastro de equipamentos (potência, horas/dia, quantidade)
+### **Inteligência Artificial**
 
-Cálculo automático de:
+* **Modelo:** Google Gemini API
+* **Features:** Sanitização de JSON, Fallback determinístico e tratamento de respostas.
 
-Consumo mensal (kWh)
+### **Frontend**
 
-Custo mensal estimado (R$)
+* HTML5, CSS3 e JavaScript Vanilla (Fetch API)
 
-Emissão estimada de CO₂
+---
 
-Geração de diagnóstico inteligente com 5 recomendações priorizadas
+## 📂 Estrutura do Projeto
 
-Exibição em painel executivo com KPIs
-
-🧠 Arquitetura da Solução
-Separação de Responsabilidades
-
-O projeto foi estruturado em camadas claras:
-
-Controller → Service → Repository → MongoDB
-↘ IA (Gemini API)
-
-🔹 Backend (Spring Boot)
-
-Responsável por:
-
-Persistência de dados
-
-Cálculos determinísticos
-
-Orquestração da IA
-
-Normalização e validação das respostas
-
-🔹 IA Generativa (Google Gemini)
-
-Responsável por:
-
-Interpretar dados de consumo
-
-Gerar diagnóstico textual
-
-Criar recomendações contextualizadas
-
-Estimar impacto (quando possível)
-
-Importante:
-Os valores financeiros e de consumo não são inventados pela IA.
-Eles são forçados a partir do cálculo backend (regra de negócio).
-
-🔹 Frontend (HTML + CSS + JS puro)
-
-Responsável por:
-
-Fluxo guiado em 3 etapas
-
-Consumo da API REST
-
-Renderização do painel executivo
-
-Interface estilo B2B
-
-🧩 Fluxo da Aplicação
-
-Usuário cadastra empresa
-
-Cadastra equipamentos
-
-Backend calcula:
-
-consumoMensalKwh = (potencia × horasUso × quantidade × 30) / 1000
-custoEstimado = consumoMensalKwh × tarifa
-
-
-Backend envia dados estruturados para a IA
-
-IA retorna JSON estruturado
-
-Backend valida, sanitiza e normaliza resposta
-
-Frontend renderiza KPIs + plano de ação
-
-🏗️ Stack Tecnológica
-Backend
-
-Java 17
-
-Spring Boot 3.x
-
-Spring Web (REST)
-
-Spring Data MongoDB
-
-Bean Validation
-
-Jackson (serialização JSON)
-
-Maven
-
-RestClient (integração externa)
-
-Banco de Dados
-
-MongoDB (NoSQL)
-
-Modelagem baseada em documentos
-
-Relacionamento via usuarioId
-
-IA
-
-Google Gemini API
-
-Sanitização de resposta JSON
-
-Tratamento de respostas incompletas
-
-Fallback determinístico
-
-Frontend
-
-HTML5
-
-CSS3 (design corporativo)
-
-JavaScript Vanilla
-
-Fetch API
-
-📂 Estrutura do Projeto
+```text
 br.com.energia.energiaslz
-├── controller/       → Endpoints REST
-├── service/
-│   ├── UsuarioService
-│   ├── ConsumoService
-│   ├── RelatorioService
-│   └── ia/
-│       ├── ChatService
-│       └── GeminiClient
-├── repository/       → Mongo repositories
-├── model/            → Entidades (Usuario, Consumo)
-├── dto/              → DTOs de request/response
+├── controller/    # Endpoints REST
+├── service/       # Lógica de negócio e Integração Gemini
+├── repository/    # Persistência MongoDB
+├── model/         # Entidades (Usuario, Consumo)
+├── dto/           # Objetos de transferência de dados
 └── resources/
-    └── static/       → Frontend (index.html, styles.css, script.js)
+    └── static/    # Frontend (Interface B2B)
 
-🌐 Endpoints Principais
-Status
-GET /status
-GET /api/status
+```
 
-Empresa
-POST /api/usuarios
-GET  /api/usuarios
-GET  /api/usuarios/{id}
+---
 
-Equipamentos
-POST /api/consumos
-GET  /api/consumos
-GET  /api/consumos/usuario/{usuarioId}
+## 🌐 API Endpoints (Resumo)
 
-Relatório Determinístico
-GET /api/relatorios/{usuarioId}
+### Empresas & Consumo
 
-Chat com IA
-POST /api/chat
+* `POST /api/usuarios` - Cadastro de nova empresa.
+* `POST /api/consumos` - Registro de equipamentos.
+* `GET /api/relatorios/{usuarioId}` - Relatório matemático puro.
 
+### Inteligência
 
-Body:
+* `POST /api/chat` - Solicita o diagnóstico contextual à IA.
 
-{
-  "usuarioId": "id_da_empresa",
-  "mensagem": "Gere um diagnóstico energético"
-}
+<details>
+<summary><b>Clique para ver um exemplo de resposta da IA (JSON)</b></summary>
 
-🧪 Exemplo de Resposta da IA
+```json
 {
   "resposta": "Diagnóstico indica que a geladeira é o principal consumidor.",
-  "recomendacoes": [
-    { "titulo": "Otimização da Geladeira", "descricao": "...", "impacto": "..." }
-  ],
   "impacto": {
     "economiaPercentual": 8,
     "economiaMensalReais": 21.60,
-    "economiaAnualReais": 259.20,
     "co2EvitadoKgMes": 2.1
-  },
-  "relatorio": {
-    "consumoMensalKwh": 360.0,
-    "custoEstimado": 270.0
   }
 }
 
-🚀 Como Rodar Localmente
-Pré-requisitos
+```
 
-Java 17
+</details>
 
-Maven
+---
 
-MongoDB rodando em localhost:27017
+## 🚀 Como Executar
 
-Variável de ambiente:
+1. **Clonar o repositório:**
+```bash
+git clone https://github.com/seu-usuario/energia-slz.git
 
-Windows:
-
-setx GEMINI_API_KEY "SUA_CHAVE"
+```
 
 
-Linux/macOS:
+2. **Configurar Variável de Ambiente:**
+* **Linux/macOS:** `export GEMINI_API_KEY="SUA_CHAVE"`
+* **Windows:** `setx GEMINI_API_KEY "SUA_CHAVE"`
 
-export GEMINI_API_KEY="SUA_CHAVE"
 
-Rodar aplicação
+3. **Rodar:**
+```bash
 mvn spring-boot:run
 
+```
 
-Acesse:
 
-http://localhost:8080
+Acesse: `http://localhost:8080`
 
-🧠 Diferenciais Técnicos
+---
 
-✔ Separação entre cálculo determinístico e IA
-✔ Sanitização de JSON retornado pela IA
-✔ Tratamento de respostas truncadas
-✔ Fallback automático para recomendações padrão
-✔ Arquitetura limpa e extensível
-✔ API REST estruturada
-✔ Projeto orientado a contexto real de negócio
+## 👨‍💻 Autor
 
-📌 Possíveis Evoluções
+**Gean Carlos** - [LinkedIn](https://www.google.com/search?q=seu-link) | 
+*Desenvolvedor Full Stack em formação com foco em APIs e IA.*
 
-Dashboard com gráficos (Chart.js)
+---
 
-Autenticação JWT
-
-Multi-empresa por usuário
-
-Deploy em nuvem (Railway / Render / AWS)
-
-Banco Mongo Atlas
-
-Histórico de relatórios
-
-Exportação PDF executiva
-
-👨‍💻 Autor
-
-Gean Carlos
-Desenvolvedor Full Stack em formação
-Foco em Backend, APIs REST e Integração com IA
