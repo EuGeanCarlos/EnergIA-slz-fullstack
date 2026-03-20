@@ -60,7 +60,7 @@ public class GeminiClient {
         // Força JSON quando suportado (ajuda, mas não garante 100%)
         body.put("generationConfig", Map.of(
                 "temperature", 0.2,
-                "maxOutputTokens", 4096, // ⭐ aumentei (truncamento era provável)
+                "maxOutputTokens", 4096, //  aumentei (truncamento era provável)
                 "responseMimeType", "application/json"
         ));
 
