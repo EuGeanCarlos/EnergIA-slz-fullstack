@@ -1,3 +1,85 @@
+# EnergIA SLZ Full Stack
+
+Aplicação Spring Boot com cadastro de usuários e consumos, relatórios e chat. O frontend em resources/static chama APIs relativas do próprio servidor.
+
+## Tecnologias
+
+- Java
+- Spring Boot
+- Maven
+- MongoDB
+- HTML
+- CSS
+- JavaScript
+
+## Funcionalidades e utilização
+
+Inicie o backend com MongoDB e configuração da integração Gemini. Abra a URL local informada pelo servidor. A interface depende das APIs /api; Pages não executa o backend.
+
+## Como executar
+
+```bash
+git clone https://github.com/EuGeanCarlos/EnergIA-slz-fullstack.git
+cd EnergIA-slz-fullstack
+cd energiaslz
+mvn test
+mvn spring-boot:run
+```
+
+Requer JDK compatível com pom.xml e Maven 3.9+. Testes Spring podem exigir banco/serviços locais configurados.
+
+## Demonstração e publicação
+
+Execução local. Nenhuma demonstração nova foi confirmada nesta etapa.
+
+GitHub Pages hospeda arquivos estáticos e não executa Java, Node.js, PHP ou Python. As dependências de servidor deste projeto devem ser executadas em ambiente apropriado.
+
+## Estrutura versionada
+
+```text
+README.md
+energiaslz/.gitattributes
+energiaslz/.gitignore
+energiaslz/.mvn/wrapper/maven-wrapper.properties
+energiaslz/body.json
+energiaslz/mvnw
+energiaslz/mvnw.cmd
+energiaslz/pom.xml
+energiaslz/resposta.json
+energiaslz/src/main/java/br/com/energia/energiaslz/EnergiaslzApplication.java
+energiaslz/src/main/java/br/com/energia/energiaslz/config/JacksonConfig.java
+energiaslz/src/main/java/br/com/energia/energiaslz/controller/ChatController.java
+energiaslz/src/main/java/br/com/energia/energiaslz/controller/ConsumoController.java
+energiaslz/src/main/java/br/com/energia/energiaslz/controller/GlobalExceptionHandler.java
+energiaslz/src/main/java/br/com/energia/energiaslz/controller/RelatorioController.java
+energiaslz/src/main/java/br/com/energia/energiaslz/controller/StatusController.java
+energiaslz/src/main/java/br/com/energia/energiaslz/controller/UsuarioController.java
+energiaslz/src/main/java/br/com/energia/energiaslz/dto/RelatorioDTO.java
+energiaslz/src/main/java/br/com/energia/energiaslz/dto/chat/ChatRequestDTO.java
+energiaslz/src/main/java/br/com/energia/energiaslz/dto/chat/ChatResponseDTO.java
+energiaslz/src/main/java/br/com/energia/energiaslz/model/Consumo.java
+energiaslz/src/main/java/br/com/energia/energiaslz/model/Usuario.java
+…
+```
+
+## Status
+
+Protótipo / projeto de estudo em desenvolvimento. A descrição acima distingue o que está implementado das dependências ou etapas pendentes.
+
+## Autor e créditos
+
+**Gean Carlos** — estudante de Engenharia de Computação, UEMA.
+
+[GitHub](https://github.com/EuGeanCarlos)
+
+Licenças, autoria compartilhada e atribuições existentes no código e nos materiais originais permanecem aplicáveis.
+
+---
+
+## Documentação original e contexto
+
+O material original a seguir preserva contexto, créditos e planejamento. Para execução e limitações atuais, considere as seções de auditoria acima.
+
 # ⚡ EnergIA SLZ — Inteligência Energética para Microempresas
 
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
