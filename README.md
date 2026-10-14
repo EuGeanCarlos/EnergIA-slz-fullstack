@@ -219,3 +219,22 @@ Acesse: `http://localhost:8080`
 
 ---
 
+
+## Validação desta auditoria — 14/10/2026
+
+Sem publicação nova confirmada. mvn test aprovado: 1 teste de contexto. Backend público não identificado; não há publicação independente funcional do frontend que chama /api no mesmo host.
+
+## Endpoints encontrados no código
+
+| Método | Caminho | Uso |
+| --- | --- | --- |
+| GET | `/api/status` e `/status` | Estado do serviço |
+| GET, POST | `/api/usuarios` | Consulta e cadastro de usuários |
+| GET | `/api/usuarios/{id}` | Consulta individual |
+| GET, POST | `/api/consumos` | Consulta e cadastro de consumos |
+| POST | `/api/consumos/{usuarioId}` | Cadastro associado a usuário |
+| GET | `/api/consumos/usuario/{usuarioId}` | Consumos do usuário |
+| GET | `/api/relatorios` e `/api/relatorios/{usuarioId}` | Relatórios |
+| GET, POST | `/api/chat` | Integração de chat |
+
+Consulte DTOs e assinaturas dos controladores para os corpos de requisição. Esta lista descreve o código; não afirma disponibilidade de um endpoint público.
